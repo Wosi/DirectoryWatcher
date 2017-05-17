@@ -2,6 +2,9 @@ unit DirectoryWatcherAPI;
 
 interface
 
+uses
+  SysUtils;
+
 type
   TDirectoryEventType = (
     detAdded,
@@ -22,6 +25,8 @@ type
     function OnChangeTrigger(const Callback: TDirectoryEvent): IDirectoryWatcherBuilder;
     function Build: IDirectoryWatcher;
   end;
+
+  EDirectoryWatcher = class(Exception);
   
 implementation
 

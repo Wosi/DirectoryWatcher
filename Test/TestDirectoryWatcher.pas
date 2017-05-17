@@ -37,7 +37,7 @@ type
 implementation
 
 uses
-  FileUtil, DirectoryWatcher;
+  FileUtil, DirectoryWatcherBuilder;
 
 const 
   EVENT_NAMES: array[TDirectoryEventType] of String = (

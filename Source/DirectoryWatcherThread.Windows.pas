@@ -1,4 +1,4 @@
-unit DirectoryWatcherThread;
+unit DirectoryWatcherThread.Windows;
 
 interface
 
@@ -18,7 +18,7 @@ type
     fncCreation, 
     fncSecurity);
 
-  TDirectoryWatcherThread = class(TThread)
+  TDirectoryWatcherThreadWindows = class(TThread)
   private
     FhFile : DWORD;
     FDirectory : String;
@@ -61,7 +61,7 @@ type
     dwFileName : WideString;
   end;  
 
-constructor TDirectoryWatcherThread.Create(const Directory: String; const WatchSubtree: Boolean; const OnGetData: TDirectoryEvent);
+constructor TDirectoryWatcherThreadWindows.Create(const Directory: String; const WatchSubtree: Boolean; const OnGetData: TDirectoryEvent);
 begin
   inherited Create(True);
   FDirectory := IncludeTrailingPathDelimiter(Directory);
@@ -71,7 +71,7 @@ begin
   FreeOnTerminate := True;
 end;
 
-procedure TDirectoryWatcherThread.Execute;
+procedure TDirectoryWatcherThreadWindows.Execute;
 var
   pBuffer : Pointer;
   dwBufLen : DWORD;
@@ -153,7 +153,7 @@ begin
   end;
 end;
 
-destructor TDirectoryWatcherThread.Destroy;
+destructor TDirectoryWatcherThreadWindows.Destroy;
 begin
   try  
     if FhFile <> INVALID_HANDLE_VALUE then 
@@ -168,7 +168,7 @@ begin
   inherited;
 end;
 
-function TDirectoryWatcherThread.ActionIDToEventType(const ActionID: DWORD): TDirectoryEventType;
+function TDirectoryWatcherThreadWindows.ActionIDToEventType(const ActionID: DWORD): TDirectoryEventType;
 begin
   Result := detModified;
   case ActionID of
@@ -180,7 +180,7 @@ begin
   end;
 end;
 
-procedure TDirectoryWatcherThread.SetFilter(const Value: opTyp);
+procedure TDirectoryWatcherThreadWindows.SetFilter(const Value: opTyp);
 const
   FILE_NOTIFY_CHANGE_LAST_ACCESS = $00000020;
   FILE_NOTIFY_CHANGE_CREATION = $00000040;
