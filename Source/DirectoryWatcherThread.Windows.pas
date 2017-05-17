@@ -5,7 +5,7 @@ interface
 {$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
 uses
-  SysUtils, Classes, SyncObjs, Windows, jwawinbase, DirectoryWatcherAPI;
+  SysUtils, Classes, SyncObjs, DirectoryWatcherAPI;
 
 type
   opTyp = set of (
@@ -39,6 +39,9 @@ type
   end;
   
 implementation
+
+uses
+  JwaWinBase, Windows;
 
 const
   FILE_ACTION_ADDED = $1;

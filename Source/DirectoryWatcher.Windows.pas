@@ -5,10 +5,10 @@ interface
 {$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
 uses
-  SysUtils, Classes, DirectoryWatcherThread.Windows, SyncObjs, jwawinbase, DirectoryWatcherAPI, DirectoryWatcher;
+  DirectoryWatcher;
 
 type
-  TDirectoryWatcherWindows = class(TDirectoryWatcher, IDirectoryWatcher)
+  TDirectoryWatcherWindows = class(TDirectoryWatcher)
   private
     FTermEventName: String;
     procedure StartThread;
@@ -19,6 +19,9 @@ type
   end;
   
 implementation
+
+uses
+  SysUtils, SyncObjs, JwaWinBase, DirectoryWatcherThread.Windows, DirectoryWatcherAPI;
 
 destructor TDirectoryWatcherWindows.Destroy;
 begin

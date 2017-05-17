@@ -5,7 +5,7 @@ interface
 {$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
 uses
-  SysUtils, Classes, DirectoryWatcherAPI;
+  DirectoryWatcherAPI;
 
 type
   TDirectoryWatcher = class(TInterfacedObject, IDirectoryWatcher)
