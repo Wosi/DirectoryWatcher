@@ -21,8 +21,15 @@ type
   
 implementation
 
-uses
-  DirectoryWatcher.Windows;
+{$IFDEF WINDOWS}
+  uses DirectoryWatcher.Windows;
+{$ENDIF}
+{$IFDEF MAC}
+  uses DirectoryWatcher.Mac;
+{$ENDIF}
+{$IFDEF LINUX}
+  uses DirectoryWatcher.Linux;
+{$ENDIF}
 
 class function TDirectoryWatcherBuilder.New: IDirectoryWatcherBuilder;
 begin

@@ -17,6 +17,8 @@ type
     destructor Destroy; override;
     procedure Start; override;
   end;
+
+  TDirectoryWatcher = TDirectoryWatcherWindows;
   
 implementation
 
