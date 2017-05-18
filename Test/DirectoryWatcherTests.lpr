@@ -1,7 +1,6 @@
 program DirectoryWatcherTests;
 
 uses
-  // heaptrc,
   Classes, ConsoleTestRunner, TestDirectoryWatcher;
 
 var

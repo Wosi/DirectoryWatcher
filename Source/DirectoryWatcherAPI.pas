@@ -16,6 +16,10 @@ type
   IDirectoryWatcher = interface
     ['{590A0F34-800E-4116-AA30-2887876579A8}']
     procedure Start;
+    function GetDirectory: String;
+    function GetWatchSubdirectories: Boolean;
+    property Directory: String read GetDirectory;
+    property WatchSubdirectories: Boolean read GetWatchSubdirectories;
   end;
 
   IDirectoryWatcherBuilder = interface
