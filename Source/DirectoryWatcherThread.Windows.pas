@@ -104,6 +104,7 @@ var
   FileName : String;
   PrevFileName: String;
   HandleAsString: String;
+  FilePath: String;
 begin
   PrevFileName := '';
   PrevTimeStamp  := 0;
@@ -149,9 +150,11 @@ begin
               fAction := PInfo.dwAction;
               dwFnLen := PInfo.dwFileNameLength;
               FileName := String(WideCharLenToString(@PInfo.dwFileName, dwFnLen div 2));
+              FilePath := FDirectory + FileName; 
 
               if ((GetTickCount64 - PrevTimeStamp) > 16) or (FileName <> PrevFileName) then
-                FOnGetData(FDirectory + FileName, ActionIDToEventType(FAction));
+                if not DirectoryExists(FilePath) then
+                  FOnGetData(FilePath, ActionIDToEventType(FAction));
 
               PrevTimeStamp := GetTickCount64;
               PrevFileName := FileName;

@@ -227,16 +227,8 @@ begin
   FilePath := IncludeTrailingPathDelimiter(FTestFolder) + 'SubFolder' + PathDelim + 'File7.txt';
   WriteFile(FilePath, '');
   WaitForOSToTriggerEvents;
-
-  {$IFDEF WINDOWS}
-    CheckEquals(2, FNotifications.Count, 'Received notifications: ' + FNotifications.Text);
-    CheckEquals(EventToStr(IncludeTrailingPathDelimiter(FTestFolder) + 'SubFolder', detAdded), Trim(FNotifications[0]));
-  {$ELSE}
-    CheckEquals(1, FNotifications.Count, 'Received notifications: ' + FNotifications.Text);
-  {$ENDIF}
-  
+  CheckEquals(1, FNotifications.Count, 'Received notifications: ' + FNotifications.Text);
   CheckEquals(EventToStr(FilePath, detAdded), Trim(FNotifications[FNotifications.Count - 1]));
-
 end;
 
 initialization
