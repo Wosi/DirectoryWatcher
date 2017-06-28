@@ -74,6 +74,21 @@ begin
   FreeOnTerminate := True;
 end;
 
+destructor TDirectoryWatcherThreadWindows.Destroy;
+begin
+  try  
+    if FhFile <> INVALID_HANDLE_VALUE then 
+      CloseHandle(FhFile);
+
+    CloseHandle(FileEvent);
+    TermEvent.Free;
+    SuspEvent.Free;
+  except
+  end;
+  
+  inherited;
+end;
+
 procedure TDirectoryWatcherThreadWindows.Execute;
 var
   pBuffer : Pointer;
@@ -154,21 +169,6 @@ begin
   finally
     FreeMem(pBuffer, dwBufLen);
   end;
-end;
-
-destructor TDirectoryWatcherThreadWindows.Destroy;
-begin
-  try  
-    if FhFile <> INVALID_HANDLE_VALUE then 
-      CloseHandle(FhFile);
-
-    CloseHandle(FileEvent);
-    TermEvent.Free;
-    SuspEvent.Free;
-  except
-  end;
-  
-  inherited;
 end;
 
 function TDirectoryWatcherThreadWindows.ActionIDToEventType(const ActionID: DWORD): TDirectoryEventType;
