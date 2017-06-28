@@ -120,6 +120,8 @@ end;
 
 function TDirectoryWatcherThreadMac.FlagToEventType(const Flag: Integer; const Path: String): TDirectoryEventType;
 begin
+  if (Flag and kFSEventStreamEventFlagItemFinderInfoMod) <> 0 then
+    Exit(detModified);  
 
   if (Flag and kFSEventStreamEventFlagItemRenamed) <> 0 then
     if FileExists(Path) then
