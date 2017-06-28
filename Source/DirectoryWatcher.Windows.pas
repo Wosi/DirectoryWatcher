@@ -18,8 +18,6 @@ type
     procedure Start; override;
   end;
 
-  TDirectoryWatcher = TDirectoryWatcherWindows;
-  
 implementation
 
 uses
@@ -33,16 +31,14 @@ end;
 
 procedure TDirectoryWatcherWindows.Start;
 begin
+  inherited;
   StartThread;
 end;
 
 procedure TDirectoryWatcherWindows.StartThread;
 var
   ControlThread: TDirectoryWatcherThreadWindows;
-begin
-  if (Length(FDirectory) = 0) or (not DirectoryExists(FDirectory)) then
-    raise EDirectoryWatcher.Create('TDirectoryWatcher: No or invalid folder');
-
+begin  
   ControlThread := TDirectoryWatcherThreadWindows.Create(FDirectory, FRecursively, FEventHandler);
   FTermEventName := IntToStr(ControlThread.Handle) + 'N';
   ControlThread.Start;

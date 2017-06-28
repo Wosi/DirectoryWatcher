@@ -1,8 +1,10 @@
 program DirectoryWatcherTests;
 
 uses
+  {$IFNDEF WINDOWS} cThreads, {$ENDIF}
   Classes, ConsoleTestRunner, TestDirectoryWatcher;
 
+{$MACRO ON}
 var
   Application: TTestRunner;
 
