@@ -38,7 +38,6 @@ end;
 
 procedure TDirectoryWatcherLinux.StopThread;
 begin
-//   FThread.TearDown;
   FThread.Terminate;
   FThread.Free;
 end;
