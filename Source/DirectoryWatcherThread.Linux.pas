@@ -20,6 +20,11 @@ type
     FInotifyFd: cint;
     procedure AddWatchesForSubDirectories(const BaseDir: String; const TriggerEventsForFiles: Boolean);
     procedure AddWatchForDirectory(const Directory: String; const TriggerEventsForFilesInSubFolders: Boolean);
+    function InitializeINotify: Boolean;
+    function InitializeEPoll: cint;
+    procedure ReadAndHandleINotifyEvents;
+    function INotifyEventMaskToEventType(const Mask: cuint32): TDirectoryEventType;
+    procedure HandleINotifyEvent(const FilePath: String; const EventType: TDirectoryEventType);
   protected
     procedure Execute; override;
   public
@@ -53,107 +58,33 @@ begin
 end;
 
 procedure TDirectoryWatcherThreadLinux.Execute;
-const
-  BUFFER_LENGTH = 10 * SizeOf(inotify_event) + 256;
 var
-  Watch, EPollFd, Err: cint;  
-  Buffer: Array[0..BUFFER_LENGTH - 1] of Char;
-  BytesRead: TsSize;
-  InotifyEvent: Pinotify_event;
-  I: Integer;
-  EPollEvent: Epoll_Event;
-  Events: Array[0..0] of EPoll_Event;
-  FileName, Directory, FullPath: String;
-  EventType: TDirectoryEventType;
+  EPollFd, WaitResult: cint; 
+  Events: array[0..9] of EPoll_Event; 
 begin
-  FInotifyFd := inotify_init;
-  if FInotifyFd = -1 then
+  if not InitializeINotify then
     Exit;
 
   AddWatchForDirectory(FDirectory, IGNORE_FILES_IN_SUB_DIRS);
-
-  EPollFd := epoll_create(SizeOf(FInotifyFd));
-  EPollEvent.Data.FD := FInotifyFd;
-  EPollEvent.Events := EPOLLIN or EPOLLOUT or EPOLLET;
-
-  Err := epoll_ctl(EPollFd, EPOLL_CTL_ADD, FInotifyFd, @EPollEvent);
-  if Err < 0 then
-    WriteLn('EPOLL_CTL ERROR ', ErrNo);
+  EPollFd := InitializeEPoll;
 
   while True do
   begin
-    err := epoll_wait(EPollFd, @Events, 1, 100);
+    WaitResult := epoll_wait(EPollFd, @Events, Length(Events), 100);
 
-    if err = 0 then
-    begin
-      WriteLn('TimeOut!');
+    if Terminated then
+      Exit;
 
-      if Terminated then
-      begin
-        WriteLn('Termination!');
-        Exit;
-      end;
-    end
-    else
-    begin
-      WriteLn('Something happened');
-      WriteLn('EpollWait ', err);
-      WriteLn('EPollEvent.Data.xFD ', Events[0].Data.FD);
-      WriteLn('FInotifyFd ', FInotifyFd);
-      Writeln(Events[0].Events);
-    
+    if WaitResult > 0 then
       if Events[0].Data.FD = FInotifyFd then
-      begin
-        BytesRead := FpRead(FInotifyFd, @Buffer, BUFFER_LENGTH);
-        WriteLn('BytesRead ', BytesRead);
-
-        for I := 0 to BytesRead - 1 do
-          if Buffer[I] < #32 then
-            Write('#' + IntToStr(Byte(Buffer[I])))
-          else
-            Write(Buffer[I]);
-
-        I := 0;
-        while I < BytesRead do
-        begin
-          WriteLn('I = ', I);
-          InotifyEvent := @Buffer[I];
-          WriteLn('Event Length: ', InotifyEvent.len);
-          WriteLn('Mask: ', InotifyEvent.mask);
-          WriteLn('wd: ', InotifyEvent.wd);
-          WriteLn('Name ', InotifyEvent.name);
-        
-          if FWatches.TryGetData(InotifyEvent.wd, Directory) then
-          begin
-            FileName := String(PChar(@Buffer[I] + SizeOf(inotify_event) - 1));  
-            WriteLn('n2: ', Directory);
-            WriteLn('n3: ', FileName);
-          
-            if (InotifyEvent.mask and IN_CREATE) > 0 then
-              EventType := detAdded
-            else if (InotifyEvent.mask and IN_DELETE) > 0 then
-              EventType := detRemoved
-            else if (InotifyEvent.mask and IN_MOVED_FROM) > 0 then
-              EventType := detRemoved
-            else if (InotifyEvent.mask and IN_MOVED_TO) > 0 then
-              EventType := detAdded                                
-            else
-              EventType := detModified;
-
-            FullPath := Directory + FileName;
-            if not DirectoryExists(FullPath) then
-              FOnGetData(FullPath, EventType)
-            else if FWatchSubtree then
-              AddWatchForDirectory(FullPath, TRIGGER_EVENT_FOR_ALL_FILES_IN_SUB_DIRS);
-          end;
-
-          I := I + SizeOf(inotify_event) + InotifyEvent.len - 1;
-        end;     
-      end;        
-    end;      
+        ReadAndHandleINotifyEvents;   
   end;
+end;
 
-  WriteLn('Done');
+function TDirectoryWatcherThreadLinux.InitializeINotify: Boolean;
+begin
+  FInotifyFd := inotify_init;
+  Result := FInotifyFd >= 0;
 end;
 
 procedure TDirectoryWatcherThreadLinux.AddWatchesForSubDirectories(const BaseDir: String; const TriggerEventsForFiles: Boolean);
@@ -188,6 +119,68 @@ begin
 
   if FWatchSubtree then
     AddWatchesForSubDirectories(Directory, TriggerEventsForFilesInSubFolders);
+end;
+
+function TDirectoryWatcherThreadLinux.InitializeEPoll: cint;
+var
+  EPollEvent: Epoll_Event;
+begin
+  Result := epoll_create(SizeOf(cint));
+  EPollEvent.Data.FD := FInotifyFd;
+  EPollEvent.Events := EPOLLIN or EPOLLOUT or EPOLLET;
+  epoll_ctl(Result, EPOLL_CTL_ADD, FInotifyFd, @EPollEvent);
+end;
+
+procedure TDirectoryWatcherThreadLinux.ReadAndHandleINotifyEvents;
+const
+  BUFFER_LENGTH = 10 * SizeOf(inotify_event) + 256;
+var
+  Buffer: Array[0..BUFFER_LENGTH - 1] of Char;
+  BytesRead: TsSize;
+  INotifyEvent: Pinotify_event;
+  I: Integer;
+  FileName, Directory, FullPath: String;
+  EventType: TDirectoryEventType;
+begin
+  BytesRead := FpRead(FInotifyFd, @Buffer, BUFFER_LENGTH);
+
+  I := 0;
+  while I < BytesRead do
+  begin
+    INotifyEvent := @Buffer[I];
+  
+    if FWatches.TryGetData(INotifyEvent.wd, Directory) then
+    begin
+      EventType := INotifyEventMaskToEventType(INotifyEvent.mask);
+      FileName := String(PChar(@Buffer[I] + SizeOf(inotify_event) - 1));                  
+      FullPath := Directory + FileName;
+      HandleINotifyEvent(FullPath, EventType);
+    end;
+
+    I := I + SizeOf(inotify_event) + INotifyEvent.len - 1;
+  end;  
+end;
+
+function TDirectoryWatcherThreadLinux.INotifyEventMaskToEventType(const Mask: cuint32): TDirectoryEventType;
+begin
+  if (Mask and IN_CREATE) > 0 then
+    Result := detAdded
+  else if (Mask and IN_DELETE) > 0 then
+    Result := detRemoved
+  else if (Mask and IN_MOVED_FROM) > 0 then
+    Result := detRemoved
+  else if (Mask and IN_MOVED_TO) > 0 then
+    Result := detAdded                                
+  else
+    Result := detModified;
+end;
+
+procedure TDirectoryWatcherThreadLinux.HandleINotifyEvent(const FilePath: String; const EventType: TDirectoryEventType);
+begin
+  if not DirectoryExists(FilePath) then
+    FOnGetData(FilePath, EventType)
+  else if FWatchSubtree and (EventType = detAdded) then
+    AddWatchForDirectory(FilePath, TRIGGER_EVENT_FOR_ALL_FILES_IN_SUB_DIRS);
 end;
 
 end.
