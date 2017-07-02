@@ -3,7 +3,7 @@ program DirectoryWatcherDemo;
 {$mode Delphi}{$H+}
 
 uses
-  {$IFDEF UNIX}cthreads{$ENDIF}
+  {$IFDEF UNIX}cthreads,{$ENDIF}
   Classes, SysUtils, CustApp, DirectoryWatcherBuilder, DirectoryWatcherAPI;
 
 type
