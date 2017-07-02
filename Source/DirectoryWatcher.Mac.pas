@@ -3,12 +3,12 @@ unit DirectoryWatcher.Mac;
 interface
 
 uses
-  DirectoryWatcher, Classes;
+  DirectoryWatcher, DirectoryWatcherThread.Mac, Classes;
 
 type
   TDirectoryWatcherMac = class(TDirectoryWatcher)
   private
-    FThread: TThread;
+    FThread: TDirectoryWatcherThreadMac;
     procedure StartThread;
     procedure StopThread;
   public
@@ -17,9 +17,6 @@ type
   end;
 
 implementation
-
-uses
-  DirectoryWatcherThread.Mac;
 
 destructor TDirectoryWatcherMac.Destroy;
 begin
@@ -41,7 +38,7 @@ end;
 
 procedure TDirectoryWatcherMac.StopThread;
 begin
-  (FThread as TDirectoryWatcherThreadMac).TearDown;
+  FThread.TearDown;
   FThread.Terminate;
   FThread.Free;
 end;

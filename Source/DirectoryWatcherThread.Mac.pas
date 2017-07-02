@@ -8,7 +8,7 @@ unit DirectoryWatcherThread.Mac;
 interface
   
 uses
-  Classes, MacOSAll, DirectoryWatcherAPI, CocoaAll;//, FSEvents;
+  Classes, MacOSAll, DirectoryWatcherAPI, CocoaAll;
 
 type
   TCallback = procedure(streamRef: ConstFSEventStreamRef; clientCallBackInfo: UnivPtr; numEvents: size_t; eventPaths: UnivPtr; {const} eventFlags: {variable-size-array} FSEventStreamEventFlagsPtr; {const} eventIds: {variable-size-array} FSEventStreamEventIdPtr); cdecl;// {$IFDEF FPC} mwpascal; {$ENDIF}
