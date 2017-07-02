@@ -40,7 +40,7 @@ uses
 constructor TDirectoryWatcherThreadLinux.Create(const Directory: String; const WatchSubtree: Boolean; const OnGetData: TDirectoryEvent);
 begin
   inherited Create(True);
-  FDirectory := Directory;
+  FDirectory := ExcludeTrailingPathDelimiter(Directory);
   FWatchSubtree := WatchSubtree;
   FOnGetData := OnGetData;
   FWatches := TFPGMap<cint, String>.Create;
