@@ -2,6 +2,19 @@ Licensed under a disjunctive tri-license giving you the choice of one of
 the three following sets of free software/open source licensing terms:
  - Mozilla Public License, version 1.1 or later;
  - GNU General Public License, version 2.0 or later;
- - GNU Lesser General Public License, version 2.1 or later.
+ - GNU Lesser General Public License, version 2.1 or later (LGPL), with linking exception of the FPC modified LGPL.
+
 This allows the use of the code in as wide a variety of software projects
 as possible, while still maintaining copy-left on the code I wrote.
+
+FPC modified LGPL is the Library GNU General Public License with the following modification:
+As a special exception of the LGPL, the copyright holders of this library give you permission to link this library with independent modules to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of the license of that module. An independent module is a module which is not derived from or based on this library. If you modify this library, you may extend this exception to your version of the library, but you are not obligated to do so. If you do not wish to do so, delete this exception statement from your version.
+
+This allows the use of the framework code in a wide variety of software projects, while still maintaining intellectual rights on library code.
+In short:
+
+For GPL projects, use the GPL license - see <http://www.gnu.org/licenses/gpl-2.0.html>
+
+For LGPL projects, use the LGPL license - see <http://www.gnu.org/licenses/lgpl-2.1.html>
+
+For commercial projects, use the MPL License - see <http://www.mozilla.org/MPL/MPL-1.1.html> - which is the most permissive, or the FPC modified LGPL license, thanks to its linking exception - see <http://wiki.freepascal.org/modified_LGPL>
