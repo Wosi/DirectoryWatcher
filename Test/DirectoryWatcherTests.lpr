@@ -11,7 +11,6 @@ var
 begin
   Application := TTestRunner.Create(nil);
   Application.Initialize;
-  Application.Title := 'FPCUnit Console test runner';
   Application.Run;
   Application.Free;
 end.
