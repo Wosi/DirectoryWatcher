@@ -5,7 +5,7 @@ interface
 {$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
 uses
-  SysUtils, Classes, SyncObjs, DirectoryWatcherAPI;
+  SysUtils, Classes, SyncObjs, DirectoryWatcherAPI, EventTriggerThread;
 
 type
   opTyp = set of (
@@ -28,7 +28,7 @@ type
     TermEvent : TEvent;
     FFilter : DWord;
     FWatchSubtree: Boolean;
-    FOnGetData: TDirectoryEvent;
+    FEventTriggerThread: TEventTriggerThread;
     procedure SetFilter(const Value: opTyp);
     function ActionIDToEventType(const ActionID: DWORD): TDirectoryEventType;
   protected
@@ -67,11 +67,11 @@ type
 constructor TDirectoryWatcherThreadWindows.Create(const Directory: String; const WatchSubtree: Boolean; const OnGetData: TDirectoryEvent);
 begin
   inherited Create(True);
+  FreeOnTerminate := True;
   FDirectory := IncludeTrailingPathDelimiter(Directory);
   SetFilter([fncFileName, fncDirName, fncLastWrite]);
   FWatchSubtree := WatchSubtree;
-  FOnGetData := OnGetData;
-  FreeOnTerminate := True;
+  FEventTriggerThread := TEventTriggerThread.Create(OnGetData);
 end;
 
 destructor TDirectoryWatcherThreadWindows.Destroy;
@@ -85,7 +85,8 @@ begin
     SuspEvent.Free;
   except
   end;
-  
+
+  FEventTriggerThread.Free;  
   inherited;
 end;
 
@@ -104,8 +105,7 @@ var
   HandleAsString: String;
   FilePath: String;
 begin
-  PrevFileName := '';
-  PrevTimeStamp  := 0;
+  FEventTriggerThread.Start;
 
   FhFile := CreateFile(PChar(FDirectory),
                       FILE_LIST_DIRECTORY or GENERIC_READ,
@@ -149,9 +149,8 @@ begin
               dwFnLen := PInfo.dwFileNameLength;
               FileName := String(WideCharLenToString(@PInfo.dwFileName, dwFnLen div 2));
               FilePath := FDirectory + FileName; 
-
               if not DirectoryExists(FilePath) then
-                FOnGetData(FilePath, ActionIDToEventType(FAction));
+                FEventTriggerThread.EnqueueEvent(FilePath, ActionIDToEventType(FAction));
 
               PChar(PInfo) := PChar(PInfo) + dwNextOfs;
             until dwNextOfs = 0;

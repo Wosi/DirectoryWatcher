@@ -21,7 +21,7 @@ type
 implementation
 
 uses
-  SysUtils, SyncObjs, JwaWinBase, DirectoryWatcherThread.Windows, DirectoryWatcherAPI;
+  SysUtils, SyncObjs, JwaWinBase, DirectoryWatcherThread.Windows;
 
 destructor TDirectoryWatcherWindows.Destroy;
 begin
