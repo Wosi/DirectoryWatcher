@@ -85,8 +85,9 @@ begin
     SuspEvent.Free;
   except
   end;
-
-  FEventTriggerThread.Free;  
+  
+  FEventTriggerThread.FreeOnTerminate := True;
+  FEventTriggerThread.Terminate;
   inherited;
 end;
 
