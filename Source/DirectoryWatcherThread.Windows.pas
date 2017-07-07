@@ -100,9 +100,7 @@ var
   Overlap : TOverlapped;
   WaitResult: DWORD;
   EventArray : Array[0..2] of THandle;
-  PrevTimeStamp: QWORD;
   FileName : String;
-  PrevFileName: String;
   HandleAsString: String;
   FilePath: String;
 begin
@@ -152,12 +150,8 @@ begin
               FileName := String(WideCharLenToString(@PInfo.dwFileName, dwFnLen div 2));
               FilePath := FDirectory + FileName; 
 
-              if ((GetTickCount64 - PrevTimeStamp) > 16) or (FileName <> PrevFileName) then
-                if not DirectoryExists(FilePath) then
-                  FOnGetData(FilePath, ActionIDToEventType(FAction));
-
-              PrevTimeStamp := GetTickCount64;
-              PrevFileName := FileName;
+              if not DirectoryExists(FilePath) then
+                FOnGetData(FilePath, ActionIDToEventType(FAction));
 
               PChar(PInfo) := PChar(PInfo) + dwNextOfs;
             until dwNextOfs = 0;
