@@ -112,10 +112,10 @@ begin
       if FWatchSubtree or AnsiSameText(FDirectory, ExtractFileDir(Path)) then
       begin
         EventType := FlagToEventType(Flags[I], Path);
-        FOnGetData(Path, EventType);                              
+        FOnGetData(Path, EventType);
       end;
-    end;                       
-  end;  
+    end;
+  end;
 end;
 
 function TDirectoryWatcherThreadMac.FlagToEventType(const Flag: Integer; const Path: String): TDirectoryEventType;
@@ -128,6 +128,12 @@ begin
       Exit(detAdded)
     else
       Exit(detRemoved);
+
+  if ((Flag and kFSEventStreamEventFlagItemRemoved) <> 0) and ((Flag and kFSEventStreamEventFlagItemCreated) <> 0) then
+    if FileExists(Path) then
+      Exit(detModified)
+    else
+      Exit(detRemoved);  
 
   if (Flag and kFSEventStreamEventFlagItemRemoved) <> 0 then
     Exit(detRemoved);
