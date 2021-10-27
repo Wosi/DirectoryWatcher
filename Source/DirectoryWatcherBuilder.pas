@@ -1,5 +1,10 @@
 unit DirectoryWatcherBuilder;
 
+{$IFDEF MSWINDOWS}
+// compatibility with Delphi
+{$DEFINE WINDOWS}
+{$ENDIF}
+
 interface
 
 uses
